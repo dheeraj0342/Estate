@@ -13,4 +13,26 @@ export const signup = async (req, res,next) => {
     }
     
 }
+export const signin = async (req, res,next) => {
+    const { email, password } = req.body;
+    try {
+        const validuser = await User.findOne({ email });
+        if (!validuser) {
+            return handleError(res, 401, 'Invalid credentials');
+        }
+        const validpassword = bcrypt.compareSync(password, validuser.password);
+        if (!validpassword) {
+            return handleError(res, 401, 'Invalid credentials');
+        }
+        const token = jwt.sign({ id: validuser._id }, process.env.JWT_SECRET, {
+            expiresIn: '1d',
+        });
+        const { password: userpassword, ...user } = validuser._doc;
+        res.cookie('token', token, { httpOnly: true })
+        .status(200).json(user);
+    } catch (error) {
+        next(error);
+    }
+}
+
 
