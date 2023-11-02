@@ -1,5 +1,6 @@
 import User from '..//models//user.model.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 export const signup = async (req, res,next) => {
     const { username, email, password } = req.body;
     const hashpassword = bcrypt.hashSync(password, 10);
@@ -18,11 +19,11 @@ export const signin = async (req, res,next) => {
     try {
         const validuser = await User.findOne({ email });
         if (!validuser) {
-            return handleError(res, 401, 'Invalid credentials');
+            return next(handleError(res, 401, 'Invalid credentials'));
         }
         const validpassword = bcrypt.compareSync(password, validuser.password);
         if (!validpassword) {
-            return handleError(res, 401, 'Invalid credentials');
+            return nwxt(handleError(res, 401, 'Invalid credentials'));
         }
         const token = jwt.sign({ id: validuser._id }, process.env.JWT_SECRET, {
             expiresIn: '1d',
